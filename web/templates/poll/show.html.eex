@@ -1,0 +1,30 @@
+<h2>Show poll</h2>
+
+<ul>
+
+  <li>
+    <strong>Title:</strong>
+    <%= @poll.title %>
+  </li>
+
+  <li>
+    <strong>Closed:</strong>
+    <%= @poll.closed %>
+  </li>
+
+  <li>
+    <strong>Entries:</strong>
+    <ul>
+      <%= for entry <- @entries do %>
+        <li class="entry">
+          <%= entry.votes %> votes (<%= percent(entry.votes, @total) %>%):
+          <%= entry.title %>
+          <%= link "Vote", to: poll_entry_path(@conn, :vote, @poll, entry), class: "btn btn-info" %>
+        </li>
+      <% end %>
+    </ul>
+  </li>
+</ul>
+
+<%= link "Edit", to: poll_path(@conn, :edit, @poll) %>
+<%= link "Back", to: poll_path(@conn, :index) %>
