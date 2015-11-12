@@ -47,7 +47,7 @@ defmodule Haypoll.PollController do
     poll = Repo.get!(Poll, id)
     entries = Repo.all(from e in Entry,
                        where: e.poll_id == ^id,
-                       order_by: [desc: e.votes, asc: e.id])
+                       order_by: [asc: e.id])
     total = Enum.map(entries, &(&1.votes)) |> Enum.sum
     render(conn, "show.html", poll: poll, entries: entries, total: total)
   end
