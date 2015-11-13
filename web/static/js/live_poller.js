@@ -1,6 +1,7 @@
 import {Socket} from "deps/phoenix/web/static/js/phoenix"
 
 export var LivePoller = {
+  chart: null,
   init: function() {
     if (!$("#poll-id")) {
       return;
@@ -8,7 +9,8 @@ export var LivePoller = {
     console.log("LivePoller init")
     let pollChannel = this.setupPollChannel()
     this.setupVoteButtons(pollChannel)
-    this.updateGraphEntries()
+    let data = this.updateDisplay()
+    this.buildGraph(data)
   },
   createSocket: function() {
     let socket = new Socket("/socket", {params: { token: window.userToken }})
@@ -21,7 +23,10 @@ export var LivePoller = {
     let socket = this.createSocket()
     let pollId = $("#poll-id").val()
     let pollChannel = socket.channel("polls:" + pollId, {})
-    pollChannel.on("new_vote", vote => { self.updateDisplay(vote["entry_id"]) })
+    pollChannel.on("new_vote", function(vote) {
+      let data = self.updateDisplay(vote["entry_id"])
+      self.updateGraph(data)
+    })
     pollChannel.join()
       .receive("ok", resp => { console.log("Joined") })
       .receive("error", reason => console.log("Error: ", reason))
@@ -37,19 +42,28 @@ export var LivePoller = {
   updateDisplay: function(entryId) {
     let total = this.updateTotal()
     let self = this
+    var data = []
     $("li.entry").each(function() {
       let li = $(this)
-      if (entryId == li.data("entry-id")) {
+      if (entryId != null && entryId == li.data("entry-id")) {
         let newVotes = li.data("entry-votes") + 1
         self.updateEntry(li, newVotes, total)
-        self.updateGraph(entryId, newVotes, total)
+        data.push({
+          value: self.getPercent(entryId, newVotes, total),
+          color: li.data('color'),
+          label: li.children('.title').text()
+        })
       } else {
         let newVotes = li.data("entry-votes")
         self.updateEntry(li, newVotes, total)
-        self.updateGraph(li.data("entry-id"), newVotes, total)
+        data.push({
+          value: self.getPercent(entryId, newVotes, total),
+          color: li.data('color'),
+          label: li.children('.title').text()
+        })
       }
     })
-    this.updateGraphEntries()
+    return data
   },
   updateTotal: function() {
     let total = (+$("#total-entries").val() + 1)
@@ -61,28 +75,21 @@ export var LivePoller = {
     li.find(".score").text(newVotes + " votes (" + percent + "%)" )
     li.data("entry-votes", newVotes)
   },
-  updateGraph: function(entryId, newVotes, total) {
-    let percent = Math.floor((newVotes / total) * 100)
-    if (percent > 1) {
-      $(".graph #entry_" + entryId).show()
-      $(".graph #entry_" + entryId).css("width", percent + "%")
-    } else {
-      $(".graph #entry_" + entryId).hide()
+  getPercent: function(entryId, newVotes, total) {
+    return Math.floor((newVotes / total) * 100)
+  },
+  buildGraph: function(data) {
+    let canvas = $("#myChart").get(0).getContext("2d")
+    this.chart = new Chart(canvas).Pie(data)
+    this.updateDisplay()
+  },
+  updateGraph: function(data) {
+    console.log(this.chart)
+      console.log(data)
+    for (var i = 0; i < data.length; i++) {
+      this.chart.segments[i].value = data[i].value
     }
-  },
-  updateGraphEntries: function() {
-    let offset         = 5
-    let last           = $(".graph > div:last-child")
-    let containerWidth = parseFloat($(".graph").css("width"))
-    let remainder      = containerWidth - this.entryTotalWidth()
-    let newWidth       = parseFloat(last.css("width")) + remainder - offset
-    last.css("width", newWidth)
-  },
-  entryTotalWidth: function() {
-    var total = 0
-    $(".graph > div").each(function() {
-      total += parseFloat($(this).css("width"))
-    })
-    return total
+    this.chart.update()
   }
+
 }

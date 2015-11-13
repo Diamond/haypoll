@@ -49,7 +49,8 @@ defmodule Haypoll.PollController do
                        where: e.poll_id == ^id,
                        order_by: [asc: e.id])
     total = Enum.map(entries, &(&1.votes)) |> Enum.sum
-    render(conn, "show.html", poll: poll, entries: entries, total: total)
+    voting_restricted = Kernel.in(id, (get_session(conn, :polls) || []))
+    render(conn, "show.html", poll: poll, entries: entries, total: total, can_vote: !voting_restricted)
   end
 
   def edit(conn, %{"id" => id}) do

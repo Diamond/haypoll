@@ -2,37 +2,42 @@
 <input type="hidden" id="poll-id" value="<%= @poll.id %>">
 <% total_entries = Enum.count(@entries) %>
 
-<ul>
-  <li>
-    <strong>Title:</strong>
-    <%= @poll.title %>
-  </li>
+<div class="col-xs-8">
+  <ul>
+    <li>
+      <strong>Title:</strong>
+      <%= @poll.title %>
+    </li>
 
-  <li>
-    <strong>Closed:</strong>
-    <%= @poll.closed %>
-  </li>
+    <li>
+      <strong>Closed:</strong>
+      <%= @poll.closed %>
+    </li>
 
-  <li>
-    <strong>Entries:</strong>
-    <input type="hidden" id="total-entries" value="<%= @total %>">
-    <ul>
-      <%= for entry <- @entries do %>
-        <li class="entry" data-entry-id="<%= entry.id %>" data-entry-votes="<%= entry.votes %>">
-          <span class="score">
-            <%= entry.votes %> votes (<%= percent(entry.votes, @total, total_entries) %>%):
-          </span>
-          <%= entry.title %>
-          <%= unless @poll.closed do %>
-            <%= link "Vote", to: poll_entry_path(@conn, :vote, @poll, entry), class: "btn btn-info vote", data: [entry_id: entry.id] %>
-          <% end %>
-        </li>
-      <% end %>
-    </ul>
-  </li>
-</ul>
-
-<%= build_graph(@entries, @total) %>
+    <li>
+      <strong>Entries:</strong>
+      <input type="hidden" id="total-entries" value="<%= @total %>">
+      <ul>
+        <%= for entry <- @entries do %>
+          <li class="entry" data-entry-id="<%= entry.id %>" data-entry-votes="<%= entry.votes %>" data-color="<%= random_hex_color %>">
+            <span class="score">
+              <%= entry.votes %> votes (<%= percent(entry.votes, @total, total_entries) %>%):
+            </span>
+            <span class="title">
+              <%= entry.title %>
+            </span>
+            <%= if !@poll.closed && @can_vote do %>
+              <%= link "Vote", to: poll_entry_path(@conn, :vote, @poll, entry), class: "btn btn-info vote", data: [entry_id: entry.id] %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    </li>
+  </ul>
+</div>
+<div class="col-xs-3 col-xs-offset-1">
+  <canvas id="myChart" width="400" height="400"></canvas>
+</div>
 
 <%= link "Edit", to: poll_path(@conn, :edit, @poll) %>
 <%= link "Back", to: poll_path(@conn, :index) %>
