@@ -8,6 +8,7 @@ export var LivePoller = {
     console.log("LivePoller init")
     let pollChannel = this.setupPollChannel()
     this.setupVoteButtons(pollChannel)
+    this.updateGraphEntries()
   },
   createSocket: function() {
     let socket = new Socket("/socket", {params: { token: window.userToken }})
@@ -41,11 +42,14 @@ export var LivePoller = {
       if (entryId == li.data("entry-id")) {
         let newVotes = li.data("entry-votes") + 1
         self.updateEntry(li, newVotes, total)
+        self.updateGraph(entryId, newVotes, total)
       } else {
         let newVotes = li.data("entry-votes")
         self.updateEntry(li, newVotes, total)
+        self.updateGraph(li.data("entry-id"), newVotes, total)
       }
     })
+    this.updateGraphEntries()
   },
   updateTotal: function() {
     let total = (+$("#total-entries").val() + 1)
@@ -53,9 +57,32 @@ export var LivePoller = {
     return total
   },
   updateEntry: function(li, newVotes, total) {
-    let percent = ((newVotes / total) * 100).toFixed(2)
+    let percent = Math.floor((newVotes / total) * 100)
     li.find(".score").text(newVotes + " votes (" + percent + "%)" )
     li.data("entry-votes", newVotes)
+  },
+  updateGraph: function(entryId, newVotes, total) {
+    let percent = Math.floor((newVotes / total) * 100)
+    if (percent > 1) {
+      $(".graph #entry_" + entryId).show()
+      $(".graph #entry_" + entryId).css("width", percent + "%")
+    } else {
+      $(".graph #entry_" + entryId).hide()
+    }
+  },
+  updateGraphEntries: function() {
+    let offset         = 5
+    let last           = $(".graph > div:last-child")
+    let containerWidth = parseFloat($(".graph").css("width"))
+    let remainder      = containerWidth - this.entryTotalWidth()
+    let newWidth       = parseFloat(last.css("width")) + remainder - offset
+    last.css("width", newWidth)
+  },
+  entryTotalWidth: function() {
+    var total = 0
+    $(".graph > div").each(function() {
+      total += parseFloat($(this).css("width"))
+    })
+    return total
   }
-
 }

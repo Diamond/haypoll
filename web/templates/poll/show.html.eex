@@ -1,5 +1,6 @@
 <h2>Show poll</h2>
 <input type="hidden" id="poll-id" value="<%= @poll.id %>">
+<% total_entries = Enum.count(@entries) %>
 
 <ul>
   <li>
@@ -19,15 +20,19 @@
       <%= for entry <- @entries do %>
         <li class="entry" data-entry-id="<%= entry.id %>" data-entry-votes="<%= entry.votes %>">
           <span class="score">
-            <%= entry.votes %> votes (<%= percent(entry.votes, @total) %>%):
+            <%= entry.votes %> votes (<%= percent(entry.votes, @total, total_entries) %>%):
           </span>
           <%= entry.title %>
-          <%= link "Vote", to: poll_entry_path(@conn, :vote, @poll, entry), class: "btn btn-info vote", data: [entry_id: entry.id] %>
+          <%= unless @poll.closed do %>
+            <%= link "Vote", to: poll_entry_path(@conn, :vote, @poll, entry), class: "btn btn-info vote", data: [entry_id: entry.id] %>
+          <% end %>
         </li>
       <% end %>
     </ul>
   </li>
 </ul>
+
+<%= build_graph(@entries, @total) %>
 
 <%= link "Edit", to: poll_path(@conn, :edit, @poll) %>
 <%= link "Back", to: poll_path(@conn, :index) %>
