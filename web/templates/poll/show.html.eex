@@ -36,8 +36,5 @@
   </ul>
 </div>
 <div class="col-xs-3 col-xs-offset-1">
-  <canvas id="myChart" width="400" height="400"></canvas>
+  <canvas id="my-chart" width="400" height="400"></canvas>
 </div>
-
-<%= link "Edit", to: poll_path(@conn, :edit, @poll) %>
-<%= link "Back", to: poll_path(@conn, :index) %>

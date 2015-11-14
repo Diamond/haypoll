@@ -26,4 +26,7 @@ defmodule Haypoll.PollView do
     "##{Enum.take_random(colors, 1)}#{Enum.take_random(colors, 1)}#{Enum.take_random(colors, 1)}"
   end
 
+  def render("user_voted.json", _data) do
+    %{ status: :ok }
+  end
 end

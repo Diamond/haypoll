@@ -3,7 +3,7 @@ import {Socket} from "deps/phoenix/web/static/js/phoenix"
 export var LivePoller = {
   chart: null,
   init: function() {
-    if (!$("#poll-id")) {
+    if ($("#poll-id").length == 0) {
       return;
     }
     console.log("LivePoller init")
@@ -24,6 +24,8 @@ export var LivePoller = {
     let pollId = $("#poll-id").val()
     let pollChannel = socket.channel("polls:" + pollId, {})
     pollChannel.on("new_vote", function(vote) {
+      $.ajax("/polls/" + pollId + "/user_voted")
+      $("a.vote").remove()
       let data = self.updateDisplay(vote["entry_id"])
       self.updateGraph(data)
     })
@@ -40,16 +42,17 @@ export var LivePoller = {
     })
   },
   updateDisplay: function(entryId) {
-    let total = this.updateTotal()
+    let total = +($("#total-entries").val())
     let self = this
     var data = []
     $("li.entry").each(function() {
       let li = $(this)
       if (entryId != null && entryId == li.data("entry-id")) {
         let newVotes = li.data("entry-votes") + 1
-        self.updateEntry(li, newVotes, total)
+        let newTotal = self.updateTotal()
+        self.updateEntry(li, newVotes, newTotal)
         data.push({
-          value: self.getPercent(entryId, newVotes, total),
+          value: newVotes,
           color: li.data('color'),
           label: li.children('.title').text()
         })
@@ -57,7 +60,7 @@ export var LivePoller = {
         let newVotes = li.data("entry-votes")
         self.updateEntry(li, newVotes, total)
         data.push({
-          value: self.getPercent(entryId, newVotes, total),
+          value: newVotes,
           color: li.data('color'),
           label: li.children('.title').text()
         })
@@ -66,30 +69,34 @@ export var LivePoller = {
     return data
   },
   updateTotal: function() {
-    let total = (+$("#total-entries").val() + 1)
+    let total = +$("#total-entries").val() + 1
     $("#total-entries").val(total)
     return total
   },
   updateEntry: function(li, newVotes, total) {
-    let percent = Math.floor((newVotes / total) * 100)
+    let percent = this.getPercent(newVotes, total)
     li.find(".score").text(newVotes + " votes (" + percent + "%)" )
     li.data("entry-votes", newVotes)
   },
-  getPercent: function(entryId, newVotes, total) {
-    return Math.floor((newVotes / total) * 100)
+  getPercent: function(newVotes, total) {
+    if (total == 0) {
+      return 0
+    } else {
+      return Math.floor((newVotes / total) * 100)
+    }
   },
   buildGraph: function(data) {
-    let canvas = $("#myChart").get(0).getContext("2d")
+    let canvas = $("#my-chart").get(0).getContext("2d")
     this.chart = new Chart(canvas).Pie(data)
-    this.updateDisplay()
   },
   updateGraph: function(data) {
-    console.log(this.chart)
-      console.log(data)
-    for (var i = 0; i < data.length; i++) {
-      this.chart.segments[i].value = data[i].value
+    if ($("#total-entries").val() == "1") {
+      this.buildGraph(data)
+    } else {
+      for (var i = 0; i < data.length; i++) {
+        this.chart.segments[i].value = data[i].value
+      }
+      this.chart.update()
     }
-    this.chart.update()
   }
-
 }

@@ -84,4 +84,9 @@ defmodule Haypoll.PollController do
     |> put_flash(:info, "Poll deleted successfully.")
     |> redirect(to: poll_path(conn, :index))
   end
+
+  def user_voted(conn, %{"poll_id" => poll_id}) do
+    user_polls = get_session(conn, :polls) || []
+    conn |> put_session(:polls, [poll_id | user_polls]) |> render("user_voted.json")
+  end
 end

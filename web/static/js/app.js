@@ -24,3 +24,4 @@ Poll.load()
 
 import { LivePoller } from "./live_poller"
 LivePoller.init()
+window.LivePoller = LivePoller

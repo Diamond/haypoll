@@ -19,6 +19,7 @@ defmodule Haypoll.Router do
     get "/", PageController, :index
     resources "/polls", PollController do
       get "/entries/:id/vote", EntryController, :vote
+      get "/user_voted", PollController, :user_voted
     end
   end
 
