@@ -23,8 +23,6 @@ export var LivePoller = {
     let pollId = $("#poll-id").val()
     let pollChannel = socket.channel("polls:" + pollId, {})
     pollChannel.on("new_vote", function(vote) {
-      $.ajax("/polls/" + pollId + "/user_voted")
-      $("a.vote").remove()
       let data = self.updateDisplay(vote["entry_id"])
       self.updateGraph(data)
     })
@@ -46,7 +44,10 @@ export var LivePoller = {
     $(".vote").on("click", function(event) {
       event.preventDefault()
       let entry_id = $(event.currentTarget).data("entry-id")
+      let pollId = $("#poll-id").val()
       pollChannel.push("new_vote", { entry_id: entry_id })
+      $.ajax("/polls/" + pollId + "/user_voted")
+      $("a.vote").remove()
     })
   },
   updateDisplay: function(entryId) {
