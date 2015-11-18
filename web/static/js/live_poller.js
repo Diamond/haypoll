@@ -6,7 +6,6 @@ export var LivePoller = {
     if ($("#poll-id").length == 0) {
       return;
     }
-    console.log("LivePoller init")
     let pollChannel = this.setupPollChannel()
     this.setupVoteButtons(pollChannel)
     let data = this.updateDisplay()
@@ -51,26 +50,18 @@ export var LivePoller = {
   updateDisplay: function(entryId) {
     let total = +($("#total-entries").val())
     let self = this
-    var data = []
+    var data = [['Choice', 'Votes']]
     $("li.entry").each(function() {
       let li = $(this)
       if (entryId != null && entryId == li.data("entry-id")) {
         let newVotes = li.data("entry-votes") + 1
         let newTotal = self.updateTotal()
         self.updateEntry(li, newVotes, newTotal)
-        data.push({
-          value: newVotes,
-          color: li.data('color'),
-          label: li.children('.title').text()
-        })
+        data.push([li.children('.title').text(), newVotes])
       } else {
         let newVotes = li.data("entry-votes")
         self.updateEntry(li, newVotes, total)
-        data.push({
-          value: newVotes,
-          color: li.data('color'),
-          label: li.children('.title').text()
-        })
+        data.push([li.children('.title').text(), newVotes])
       }
     })
     return data
@@ -93,17 +84,15 @@ export var LivePoller = {
     }
   },
   buildGraph: function(data) {
-    let canvas = $("#my-chart").get(0).getContext("2d")
-    this.chart = new Chart(canvas).Pie(data)
+    var self = this
+    google.load("visualization", "1", { packages: ["corechart"] })
+    google.setOnLoadCallback(function() {
+      self.chart = new google.visualization.PieChart(document.getElementById("my-chart"))
+      self.updateGraph(data)
+    })
   },
   updateGraph: function(data) {
-    if ($("#total-entries").val() == "1") {
-      this.buildGraph(data)
-    } else {
-      for (var i = 0; i < data.length; i++) {
-        this.chart.segments[i].value = data[i].value
-      }
-      this.chart.update()
-    }
+    var convertedData = google.visualization.arrayToDataTable(data)
+    this.chart.draw(convertedData, { title: "Poll", is3D: true })
   }
 }
