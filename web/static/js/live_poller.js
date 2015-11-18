@@ -29,6 +29,13 @@ export var LivePoller = {
       let data = self.updateDisplay(vote["entry_id"])
       self.updateGraph(data)
     })
+    pollChannel.on("close", function(status) {
+      if (status.closed) {
+        $("a.vote").hide()
+      } else {
+        $("a.vote").show()
+      }
+    })
     pollChannel.join()
       .receive("ok", resp => { console.log("Joined") })
       .receive("error", reason => console.log("Error: ", reason))
