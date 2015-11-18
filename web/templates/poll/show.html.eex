@@ -1,5 +1,5 @@
 <h2 id="header-text">
-  Poll is now <%= show_header_text(@poll) %>
+  Poll is now <%= header_text(@poll) %>
 </h2>
 
 <input type="hidden" id="poll-id" value="<%= @poll.id %>">

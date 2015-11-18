@@ -13,11 +13,15 @@ defmodule Haypoll.PollView do
     %{ status: :ok }
   end
 
-  def show_header_text(poll) do
+  def header_text(poll) do
     if poll.closed do
       "closed"
     else
       "open"
     end
+  end
+
+  def allow_modifying_entries?(changeset) do
+    Enum.count(changeset.model.entries) > 0
   end
 end

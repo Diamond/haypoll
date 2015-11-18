@@ -25,14 +25,14 @@
       <h4>Entries</h4>
     </div>
     <div class="col-xs-4 text-right">
-      <%= unless @changeset.model.entries do %>
+      <%= unless allow_modifying_entries?(@changeset) do %>
         <a id="add-entry" class="btn btn-primary">Add Entry</a>
       <% end %>
     </div>
   </div>
 
   <div class="form-group">
-    <%= if Enum.count(@changeset.model.entries) > 0 do %>
+    <%= if allow_modifying_entries?(@changeset) do %>
       <%= for entry <- @changeset.model.entries do %>
         <div id="entries">
           <div class="entry row">
