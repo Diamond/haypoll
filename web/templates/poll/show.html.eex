@@ -1,4 +1,7 @@
-<h2>Show poll</h2>
+<h2 id="header-text">
+  Poll is now <%= show_header_text(@poll) %>
+</h2>
+
 <input type="hidden" id="poll-id" value="<%= @poll.id %>">
 <% total_entries = Enum.count(@entries) %>
 

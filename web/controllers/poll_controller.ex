@@ -12,7 +12,9 @@ defmodule Haypoll.PollController do
   end
 
   def new(conn, _params) do
-    changeset = Poll.changeset(%Poll{})
+    changeset = %Poll{}
+    |> Repo.preload(:entries)
+    |> Poll.changeset
     render(conn, "new.html", changeset: changeset)
   end
 
@@ -54,7 +56,7 @@ defmodule Haypoll.PollController do
   end
 
   def edit(conn, %{"id" => id}) do
-    poll = Repo.get!(Poll, id)
+    poll = Repo.get!(Poll, id) |> Repo.preload(:entries)
     changeset = Poll.changeset(poll)
     render(conn, "edit.html", poll: poll, changeset: changeset)
   end

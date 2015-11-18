@@ -31,8 +31,10 @@ export var LivePoller = {
     pollChannel.on("close", function(status) {
       if (status.closed) {
         $("a.vote").hide()
+        $("#header-text").text("Poll is now closed")
       } else {
         $("a.vote").show()
+        $("#header-text").text("Poll is now open")
       }
     })
     pollChannel.join()
